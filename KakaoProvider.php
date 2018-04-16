@@ -93,12 +93,27 @@ class KakaoProvider extends AbstractProvider implements ProviderInterface
      */
     protected function mapUserToObject(array $user)
     {
+        if ( ! isset($user['properties'])) {
+            $user['properties'] = [];
+        }
+
         return (new User())->setRaw($user)->map([
-            'id'        => $user['id'],
-            'nickname'  => $user['properties']['nickname'],
-            'name'      => $user['properties']['nickname'],
-            'email'     => $user['kaccount_email'],
-            'avatar'    => $user['properties']['profile_image'],
+            'id'        => $this->getUserData($user, 'id'),
+            'nickname'  => $this->getUserData($user['properties'], 'nickname'),
+            'name'      => $this->getUserData($user['properties'], 'nickname'),
+            'email'     => $this->getUserData($user, 'kaccount_email'),
+            'avatar'    => $this->getUserData($user['properties'], 'profile_image'),
         ]);
+    }
+
+    /**
+     * @param array $user
+     * @param string $key
+     *
+     * @return string|null
+     */
+    private function getUserData($user, $key)
+    {
+        return isset($user[$key]) ? $user[$key] : null;
     }
 }
