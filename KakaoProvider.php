@@ -77,7 +77,7 @@ class KakaoProvider extends AbstractProvider implements ProviderInterface
      */
     protected function getUserByToken($token)
     {
-        $response = $this->getHttpClient()->request('POST', 'https://kapi.kakao.com/v1/user/me', [
+        $response = $this->getHttpClient()->request('POST', 'https://kapi.kakao.com/v2/user/me', [
             'headers' => ['Authorization' => 'Bearer '.$token],
         ]);
 
@@ -97,11 +97,14 @@ class KakaoProvider extends AbstractProvider implements ProviderInterface
             $user['properties'] = [];
         }
 
+        $is_email_valid = array_get($user, 'kakao_account.is_email_valid');
+        $is_email_verified = array_get($user, 'kakao_account.is_email_verified');
+
         return (new User())->setRaw($user)->map([
             'id'        => $this->getUserData($user, 'id'),
             'nickname'  => $this->getUserData($user['properties'], 'nickname'),
             'name'      => $this->getUserData($user['properties'], 'nickname'),
-            'email'     => $this->getUserData($user, 'kaccount_email'),
+            'email'     => $is_email_valid && $is_email_verified ? array_get($user, 'kakao_account.email') : null,
             'avatar'    => $this->getUserData($user['properties'], 'profile_image'),
         ]);
     }
